@@ -1,0 +1,57 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mvp-testing
+  namespace: mvp-testing
+  labels:
+    app: mvp-testing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mvp-testing
+  template:
+    metadata:
+      labels:
+        app: mvp-testing
+    spec:
+      containers:
+      - name: web-server
+        image: mvpstudio/mvp-testing:210b286
+        resources:
+           limits:
+              cpu: 0.25
+              memory: 250Mi
+           requests:
+              cpu: 0.25
+              memory: 250Mi
+        ports:
+        - containerPort: 8000
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mvp-testing
+  namespace: mvp-testing
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v0
+      kind: Mapping
+      name: mvp-testing-routing
+      host: mvp-testing.mvpstudio.org
+      prefix: /
+      service: mvp-testing.mvp-testing
+spec:
+  selector:
+     app: mvp-testing
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8000
