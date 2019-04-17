@@ -1,4 +1,3 @@
 name: mvp-test
-build: true
-test: true
-docker_context: ../
+docker_context: 
+  - ../
